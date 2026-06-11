@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O-NET Grade 6 Interactive Dashboard</title>
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="styles.css">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <!-- Drag & Drop / File Upload Overlay -->
+    <div id="uploadOverlay" class="upload-overlay">
+        <div class="upload-card" id="dropZone">
+            <div class="upload-icon">
+                <i class="fa-solid fa-cloud-arrow-up"></i>
+            </div>
+            <div class="upload-title">นำเข้าข้อมูล O-NET ป.6 (ไฟล์ CSV)</div>
+            <div class="upload-desc">
+                เพื่อเริ่มต้นวิเคราะห์ข้อมูล กรุณาลากไฟล์ CSV มาวางที่นี่ <br>
+                หรือคลิกปุ่มด้านล่างเพื่อเลือกไฟล์จากเครื่องคอมพิวเตอร์ของคุณ
+                <br><br>
+                <small style="color: var(--text-muted); font-size: 0.8rem;">
+                    *รองรับไฟล์ O-NET รายมาตรฐานของจังหวัดเชียงใหม่ (ปี 2565 - 2568)
+                </small>
+            </div>
+            <input type="file" id="fileInput" accept=".csv" style="display: none;">
+            <button class="btn-upload" onclick="document.getElementById('fileInput').click()">
+                เลือกไฟล์ CSV
+            </button>
+            <div id="uploadStatus" style="color: var(--accent-rose); font-size: 0.9rem; margin-top: 0.5rem; display: none;"></div>
+        </div>
+    </div>
+
+    <!-- Sidebar Filters -->
+    <aside class="sidebar">
+        <div class="brand">
+            <span class="brand-icon"><i class="fa-solid fa-chart-line"></i></span>
+            <h1 class="brand-title">O-NET Analytics</h1>
+        </div>
+
+        <div class="filter-section">
+            <!-- Subject Switcher -->
+            <div class="filter-group">
+                <label class="filter-label"><i class="fa-solid fa-book"></i> วิชาวิเคราะห์</label>
+                <select id="subjectSelect" class="filter-control">
+                    <option value="วิทยาศาสตร์" selected>วิทยาศาสตร์</option>
+                    <option value="คณิตศาสตร์">คณิตศาสตร์</option>
+                    <option value="ภาษาไทย">ภาษาไทย</option>
+                    <option value="อังกฤษ">ภาษาอังกฤษ</option>
+                </select>
+            </div>
+
+            <!-- Year Filter -->
+            <div class="filter-group">
+                <label class="filter-label"><i class="fa-solid fa-calendar-days"></i> ปีการศึกษา</label>
+                <select id="filterYear" class="filter-control">
+                    <option value="all">ทั้งหมด (2565 - 2568)</option>
+                    <option value="2568">2568</option>
+                    <option value="2567">2567</option>
+                    <option value="2566">2566</option>
+                    <option value="2565">2565</option>
+                </select>
+            </div>
+
+            <!-- District Filter -->
+            <div class="filter-group">
+                <label class="filter-label"><i class="fa-solid fa-map-location-dot"></i> อำเภอที่ตั้ง</label>
+                <select id="filterDistrict" class="filter-control">
+                    <option value="all">ทั้งหมด (ทุกอำเภอ)</option>
+                </select>
+            </div>
+
+            <!-- School Size Filter -->
+            <div class="filter-group">
+                <label class="filter-label"><i class="fa-solid fa-school"></i> ขนาดโรงเรียน</label>
+                <select id="filterSize" class="filter-control">
+                    <option value="all">ทั้งหมด (ทุกขนาด)</option>
+                    <option value="เล็ก">เล็ก</option>
+                    <option value="กลาง">กลาง</option>
+                    <option value="ใหญ่">ใหญ่</option>
+                    <option value="ใหญ่พิเศษ">ใหญ่พิเศษ</option>
+                </select>
+            </div>
+
+            <!-- School Location Filter -->
+            <div class="filter-group">
+                <label class="filter-label"><i class="fa-solid fa-city"></i> พื้นที่ตั้งโรงเรียน</label>
+                <select id="filterLocation" class="filter-control">
+                    <option value="all">ทั้งหมด</option>
+                    <option value="ในเมือง">ในเมือง (ในเขตอำเภอเมือง)</option>
+                    <option value="นอกเมือง">นอกเมือง (นอกเขตอำเภอเมือง)</option>
+                </select>
+            </div>
+
+            <!-- School Affiliation Filter -->
+            <div class="filter-group">
+                <label class="filter-label"><i class="fa-solid fa-landmark"></i> สังกัดโรงเรียน</label>
+                <select id="filterAffiliation" class="filter-control">
+                    <option value="all">ทั้งหมด (ทุกสังกัด)</option>
+                </select>
+            </div>
+            
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 1rem; border-top: 1px solid var(--border-card); padding-top: 1rem; line-height: 1.4;">
+                <i class="fa-solid fa-circle-info"></i> ปรับแต่งตัวกรองเพื่อวิเคราะห์กลุ่มเป้าหมายเฉพาะแบบเรียลไทม์
+            </div>
+        </div>
+
+        <!-- Theme Toggle -->
+        <div class="theme-toggle-container">
+            <span style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 500;">สลับธีมสี</span>
+            <button id="themeToggle" class="btn-icon" title="Toggle Light/Dark Theme">
+                <i class="fa-solid fa-sun" id="themeIcon"></i>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Dashboard Area -->
+    <main class="main-content">
+        <!-- Dashboard Header -->
+        <header class="header">
+            <div class="title-area">
+                <h1 id="subjectTitle">แดชบอร์ด O-NET ป.6</h1>
+                <p id="subTitle">กำลังโหลดชุดข้อมูล...</p>
+            </div>
+            <!-- Tab Navigation -->
+            <nav class="navigation">
+                <button class="nav-tab active" data-tab="overview">ภาพรวมผลสอบ</button>
+                <button class="nav-tab" data-tab="standards">รายมาตรฐาน</button>
+                <button class="nav-tab" data-tab="explorer">รายโรงเรียน</button>
+            </nav>
+        </header>
+
+        <!-- KPI Grid Summary -->
+        <section class="kpi-grid">
+            <div class="kpi-card accent-violet">
+                <div class="kpi-icon-wrapper"><i class="fa-solid fa-award"></i></div>
+                <div class="kpi-details">
+                    <span class="kpi-value" id="kpiAvgScore">0.00</span>
+                    <span class="kpi-label">คะแนนเฉลี่ยรวม</span>
+                </div>
+            </div>
+            <div class="kpi-card accent-teal">
+                <div class="kpi-icon-wrapper"><i class="fa-solid fa-graduation-cap"></i></div>
+                <div class="kpi-details">
+                    <span class="kpi-value" id="kpiTotalStudents">0</span>
+                    <span class="kpi-label">จำนวนผู้สอบทั้งหมด</span>
+                </div>
+            </div>
+            <div class="kpi-card accent-indigo">
+                <div class="kpi-icon-wrapper"><i class="fa-solid fa-school-flag"></i></div>
+                <div class="kpi-details">
+                    <span class="kpi-value" id="kpiTotalSchools">0</span>
+                    <span class="kpi-label">โรงเรียนทั้งหมด</span>
+                </div>
+            </div>
+            <div class="kpi-card accent-rose">
+                <div class="kpi-icon-wrapper"><i class="fa-solid fa-trophy"></i></div>
+                <div class="kpi-details">
+                    <span class="kpi-value" id="kpiTopDistrict">-</span>
+                    <span class="kpi-label">อำเภอเฉลี่ยสูงสุด</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab 1: Overview -->
+        <div id="tab-overview" class="tab-content active">
+            <div class="content-grid-large-small">
+                <!-- District Mean Chart -->
+                <div class="card">
+                    <div class="card-title-area">
+                        <div>
+                            <h3 class="card-title" id="overviewDistrictTitle">คะแนนเฉลี่ยจำแนกตามอำเภอ</h3>
+                            <p class="card-subtitle">เปรียบเทียบผลคะแนนเฉลี่ยของโรงเรียนในแต่ละอำเภอ</p>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chartDistrictMean"></canvas>
+                    </div>
+                </div>
+                <!-- Student Distribution by Affiliation -->
+                <div class="card">
+                    <div class="card-title-area">
+                        <div>
+                            <h3 class="card-title" id="overviewAffiliationTitle">สัดส่วนผู้เข้าสอบตามสังกัด</h3>
+                            <p class="card-subtitle">เปอร์เซ็นต์นักเรียนจำแนกตามต้นสังกัดของโรงเรียน</p>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chartAffiliationRatio"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2: Standards -->
+        <div id="tab-standards" class="tab-content">
+            <div class="content-grid-large-small">
+                <!-- Standard Average Score Chart -->
+                <div class="card">
+                    <div class="card-title-area">
+                        <div>
+                            <h3 class="card-title" id="standardsMeanTitle">คะแนนเฉลี่ยรายมาตรฐานการเรียนรู้</h3>
+                            <p class="card-subtitle">ระบุมาตรฐานที่เป็นจุดแข็งและจุดที่ควรพัฒนาสำหรับกลุ่มเป้าหมาย</p>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chartStandardsMean"></canvas>
+                    </div>
+                </div>
+                <!-- Standards Description List -->
+                <div class="card" style="overflow-y: auto; max-height: 480px;">
+                    <h3 class="card-title"><i class="fa-solid fa-list-check"></i> รายละเอียดมาตรฐาน</h3>
+                    <p class="card-subtitle">ความหมายของรหัสมาตรฐานสาระการเรียนรู้</p>
+                    <div id="standardsDescription" style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 0.5rem; font-size: 0.85rem; line-height: 1.5;">
+                        <!-- Populate dynamically by JS -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Standard Trends over 4 Years & Written Analysis -->
+            <div class="card" style="margin-top: 0.5rem; width: 100%;">
+                <div class="card-title-area">
+                    <div>
+                        <h3 class="card-title">แนวโน้มคะแนนเฉลี่ยแยกตามมาตรฐานการเรียนรู้ (2565 - 2568)</h3>
+                        <p class="card-subtitle">วิเคราะห์พัฒนาการผลคะแนนของตัวชี้วัดในแต่ละปีการศึกษา (กดคลิกที่ชื่อมาตรฐานด้านบนเพื่อเปิด-ปิดเส้นกราฟ)</p>
+                    </div>
+                </div>
+                <div class="chart-container" style="min-height: 380px;">
+                    <canvas id="chartStandardsTrend"></canvas>
+                </div>
+                <!-- Written analysis text box -->
+                <div id="trendAnalysisBox" style="background-color: var(--bg-main); border: 1px solid var(--border-card); border-radius: 12px; padding: 1.25rem; margin-top: 1rem; font-size: 0.95rem; line-height: 1.6;">
+                    <h4 style="color: var(--primary); margin-bottom: 0.75rem; font-size: 1.05rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> บทวิเคราะห์แนวโน้มผลการเรียนรู้รายมาตรฐาน
+                    </h4>
+                    <div id="trendAnalysisContent" style="color: var(--text-secondary);">
+                        กำลังรวบรวมข้อมูลและจัดทำบทวิเคราะห์แนวโน้ม...
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+        <!-- Tab 4: School Explorer -->
+        <div id="tab-explorer" class="tab-content">
+            <div class="card">
+                <div class="card-title-area">
+                    <div>
+                        <h3 class="card-title">ค้นหาและวิเคราะห์ผลระดับโรงเรียน</h3>
+                        <p class="card-subtitle">แสดงรายการโรงเรียนตามตัวกรองที่เลือก ค้นหาชื่อ และเปรียบเทียบเชิงลึก</p>
+                    </div>
+                </div>
+                
+                <!-- Search Bar -->
+                <div class="search-bar">
+                    <input type="text" id="schoolSearchInput" placeholder="ค้นหาชื่อโรงเรียน เช่น 'ศรีจอมทอง'..." class="input-search">
+                </div>
+
+                <!-- Schools Table -->
+                <div class="table-wrapper">
+                    <table id="schoolsTable">
+                        <thead>
+                            <tr>
+                                <th>ปีการศึกษา</th>
+                                <th>ชื่อโรงเรียน</th>
+                                <th>อำเภอ</th>
+                                <th>สังกัด</th>
+                                <th>ขนาด</th>
+                                <th>ที่ตั้ง</th>
+                                <th>จำนวนผู้สอบ</th>
+                                <th style="text-align: right;">คะแนนเฉลี่ยรวม</th>
+                                <th style="text-align: center;">วิเคราะห์</th>
+                            </tr>
+                        </thead>
+                        <tbody id="schoolsTableBody">
+                            <!-- Populate dynamically by JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination Controls -->
+                <div class="pagination">
+                    <span id="paginationInfo" style="font-size: 0.85rem; color: var(--text-secondary);">แสดง 0 - 0 จาก 0 รายการ</span>
+                    <div class="pagination-controls">
+                        <button id="btnPrevPage" class="btn-page" disabled><i class="fa-solid fa-angle-left"></i> ก่อนหน้า</button>
+                        <button id="btnNextPage" class="btn-page" disabled>ถัดไป <i class="fa-solid fa-angle-right"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- School Detail Modal Card Overlay -->
+    <div id="schoolDetailModal" class="modal-overlay">
+        <div class="modal-card">
+            <!-- Modal Header -->
+            <div class="modal-header" style="align-items: center;">
+                <div class="modal-title">
+                    <h2 id="modalSchoolName">ชื่อโรงเรียน</h2>
+                    <p id="modalSchoolDistrict">อำเภอ • สังกัด • ขนาดโรงเรียน</p>
+                </div>
+                <div style="display: flex; align-items: center;">
+                    <button class="btn-upload" id="downloadPdfBtn" style="padding: 0.45rem 1rem; font-size: 0.85rem; background: linear-gradient(135deg, var(--secondary), var(--accent-indigo)); margin-right: 1.25rem;">
+                        <i class="fa-solid fa-file-pdf"></i> ดาวน์โหลด PDF
+                    </button>
+                    <button class="modal-close" id="modalCloseBtn" style="margin-top: -5px;">&times;</button>
+                </div>
+            </div>
+
+            <!-- Modal Content Body -->
+            <div class="modal-body">
+                <!-- Timeline Grid of Overall Scores -->
+                <div id="modalMetaTimeline" class="school-meta-grid" style="margin-bottom: 1rem;">
+                    <!-- Populate dynamically by JS -->
+                </div>
+
+                <!-- Standards Trend Charts Grid (Small Multiples) -->
+                <div style="margin-top: 0.5rem; width: 100%;">
+                    <h3 class="card-title" style="font-size: 1.1rem; margin-bottom: 0.25rem;">แนวโน้มพัฒนาการจำแนกตามมาตรฐานการเรียนรู้ (2565 - 2568)</h3>
+                    <p class="card-subtitle" style="margin-bottom: 0.75rem;">แสดงกราฟเส้นแสดงทิศทางการเติบโตแยกรายมาตรฐานเพื่อความชัดเจน (แกนตั้ง: คะแนนเฉลี่ย 0 - 100)</p>
+                    <div id="schoolTrendChartsGrid" class="school-trend-grid">
+                        <!-- Populate dynamically by JS -->
+                    </div>
+                </div>
+
+                <!-- School dynamic analysis box -->
+                <div id="schoolAnalysisBox" style="background-color: var(--bg-main); border: 1px solid var(--border-card); border-radius: 12px; padding: 1.25rem; margin-top: 1rem; font-size: 0.95rem; line-height: 1.6;">
+                    <h4 style="color: var(--primary); margin-bottom: 0.75rem; font-size: 1.05rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fa-solid fa-graduation-cap"></i> บทวิเคราะห์สมรรถนะการเรียนรู้และข้อเสนอแนะรายโรงเรียน
+                    </h4>
+                    <div id="schoolAnalysisContent" style="color: var(--text-secondary);">
+                        กำลังจัดทำบทวิเคราะห์และข้อเสนอแนะเชิงกลยุทธ์สำหรับโรงเรียนนี้...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- External CDNs -->
+    <!-- PapaParse for CSV Parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <!-- Chart.js for data visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chart.js Datalabels Plugin -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+    <!-- html2pdf.js for exporting PDF client-side -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- Core Dashboard Javascript Controller -->
+    <script src="dashboard.js"></script>
+</body>
+</html>
