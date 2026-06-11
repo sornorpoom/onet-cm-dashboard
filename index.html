@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>O-NET Grade 6 Interactive Dashboard</title>
+    <title>O-NET Interactive Dashboard (ป.6 & ม.3)</title>
     <!-- Stylesheets -->
     <link rel="stylesheet" href="styles.css">
     <!-- FontAwesome for Icons -->
@@ -17,7 +17,7 @@
             <div class="upload-icon">
                 <i class="fa-solid fa-cloud-arrow-up"></i>
             </div>
-            <div class="upload-title">นำเข้าข้อมูล O-NET ป.6 (ไฟล์ CSV)</div>
+            <div class="upload-title">นำเข้าข้อมูล O-NET (ไฟล์ CSV)</div>
             <div class="upload-desc">
                 เพื่อเริ่มต้นวิเคราะห์ข้อมูล กรุณาลากไฟล์ CSV มาวางที่นี่ <br>
                 หรือคลิกปุ่มด้านล่างเพื่อเลือกไฟล์จากเครื่องคอมพิวเตอร์ของคุณ
@@ -42,6 +42,15 @@
         </div>
 
         <div class="filter-section">
+            <!-- Grade Switcher -->
+            <div class="filter-group">
+                <label class="filter-label"><i class="fa-solid fa-graduation-cap"></i> ระดับชั้น</label>
+                <select id="gradeSelect" class="filter-control">
+                    <option value="p6" selected>ประถมศึกษาปีที่ 6 (ป.6)</option>
+                    <option value="m3">มัธยมศึกษาปีที่ 3 (ม.3)</option>
+                </select>
+            </div>
+
             <!-- Subject Switcher -->
             <div class="filter-group">
                 <label class="filter-label"><i class="fa-solid fa-book"></i> วิชาวิเคราะห์</label>
@@ -122,7 +131,7 @@
         <!-- Dashboard Header -->
         <header class="header">
             <div class="title-area">
-                <h1 id="subjectTitle">แดชบอร์ด O-NET ป.6</h1>
+                <h1 id="subjectTitle">แดชบอร์ด O-NET</h1>
                 <p id="subTitle">กำลังโหลดชุดข้อมูล...</p>
             </div>
             <!-- Tab Navigation -->

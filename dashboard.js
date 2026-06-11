@@ -3,6 +3,7 @@
 // Global State
 let rawDataset = [];
 let filteredDataset = [];
+let currentGrade = "p6";
 let currentSubject = "วิทยาศาสตร์";
 let currentYear = "all";
 let scoreColumns = []; // Array of standard indicator column names (Mean)
@@ -126,6 +127,11 @@ function initEventListeners() {
     });
     
     // Filters Event Listeners
+    document.getElementById("gradeSelect").addEventListener("change", (e) => {
+        currentGrade = e.target.value;
+        loadSubjectData(currentSubject);
+    });
+
     document.getElementById("subjectSelect").addEventListener("change", (e) => {
         currentSubject = e.target.value;
         loadSubjectData(currentSubject);
@@ -200,10 +206,18 @@ function showUploadStatus(message) {
 }
 
 const SUBJECT_FILES = {
-    "วิทยาศาสตร์": "onet ป.6 รายมาตรฐาน วิทยาศาสตร์ 65-68 - วิทยาศาสตร์.csv",
-    "คณิตศาสตร์": "onet ป.6 รายมาตรฐาน คณิตศาสตร์ 65-68 - คณิตศาสตร์ ป.6.csv",
-    "ภาษาไทย": "onet ป.6 รายมาตรฐาน ภาษาไทย 65 68 - ภาษาไทย ป.6.csv",
-    "อังกฤษ": "onet ป.6 รายมาตรฐาน อังกฤษ 65 68 - อังกฤษ ป.6.csv"
+    "p6": {
+        "วิทยาศาสตร์": "onet ป.6 รายมาตรฐาน วิทยาศาสตร์ 65-68 - วิทยาศาสตร์.csv",
+        "คณิตศาสตร์": "onet ป.6 รายมาตรฐาน คณิตศาสตร์ 65-68 - คณิตศาสตร์ ป.6.csv",
+        "ภาษาไทย": "onet ป.6 รายมาตรฐาน ภาษาไทย 65 68 - ภาษาไทย ป.6.csv",
+        "อังกฤษ": "onet ป.6 รายมาตรฐาน อังกฤษ 65 68 - อังกฤษ ป.6.csv"
+    },
+    "m3": {
+        "วิทยาศาสตร์": "onet วิทยาศาสตร์ ม.3 มาตรฐาน 65 68 - วิทยาศาสตร์ ม.3.csv",
+        "คณิตศาสตร์": "onet คณิตศาสตร์ ม.3 มาตรฐาน 65 68 - คณิตศาสตร์ ม.3.csv",
+        "ภาษาไทย": "onet ภาษาไทย ม.3 มาตรฐาน 65 68 - ภาษาไทย ม.3.csv",
+        "อังกฤษ": "onet อังกฤษ ม.3 มาตรฐาน 65 68 - อังกฤษ ม.3.csv"
+    }
 };
 
 // Auto Load Attempt (in case running local web server or hosted on GitHub Pages)
@@ -212,7 +226,7 @@ function tryAutoLoad() {
 }
 
 function loadSubjectData(subjectName) {
-    const filename = SUBJECT_FILES[subjectName];
+    const filename = SUBJECT_FILES[currentGrade][subjectName];
     if (!filename) return;
     
     // Show loading status inside the upload card
@@ -239,8 +253,10 @@ function loadSubjectData(subjectName) {
 function handleFile(file) {
     showUploadStatus("กำลังประมวลผลข้อมูล...");
     
-    // Auto-detect subject based on filename
+    // Auto-detect subject and grade based on filename
     const filename = file.name.toLowerCase();
+    
+    // Subject detection
     if (filename.includes("คณิต")) {
         currentSubject = "คณิตศาสตร์";
     } else if (filename.includes("ไทย")) {
@@ -251,6 +267,14 @@ function handleFile(file) {
         currentSubject = "วิทยาศาสตร์";
     }
     document.getElementById("subjectSelect").value = currentSubject;
+    
+    // Grade detection
+    if (filename.includes("ม.3") || filename.includes("ม3") || filename.includes("m.3") || filename.includes("m3") || filename.includes("grade9") || filename.includes("grade 9")) {
+        currentGrade = "m3";
+    } else if (filename.includes("ป.6") || filename.includes("ป6") || filename.includes("p.6") || filename.includes("p6") || filename.includes("grade6") || filename.includes("grade 6")) {
+        currentGrade = "p6";
+    }
+    document.getElementById("gradeSelect").value = currentGrade;
     
     // Parse CSV
     Papa.parse(file, {
@@ -355,7 +379,8 @@ function populateFilters() {
 
 // Update Title Labels
 function updateLabels() {
-    document.getElementById("subjectTitle").textContent = `ผลวิเคราะห์วิชา ${currentSubject} ป.6`;
+    const gradeLabel = currentGrade === "p6" ? "ป.6" : "ม.3";
+    document.getElementById("subjectTitle").textContent = `ผลวิเคราะห์วิชา ${currentSubject} ${gradeLabel}`;
     document.getElementById("subTitle").textContent = `สรุปผลคะแนน O-NET รายมาตรฐาน ปีการศึกษา 2565 - 2568`;
     
     // Render Standards Description List
@@ -848,7 +873,7 @@ function renderCharts() {
         
         let analysisHTML = `
             <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-                <p>จากการวิเคราะห์ข้อมูลแนวโน้มผลการทดสอบ O-NET วิชา ${currentSubject} ป.6 ของกลุ่มเป้าหมายที่เลือก ในช่วงปีการศึกษา ${startYear} ถึง ${endYear} พบอินไซต์สำคัญที่สรุปได้ดังนี้ครับ:</p>
+                <p>จากการวิเคราะห์ข้อมูลแนวโน้มผลการทดสอบ O-NET วิชา ${currentSubject} ${currentGrade === "p6" ? "ป.6" : "ม.3"} ของกลุ่มเป้าหมายที่เลือก ในช่วงปีการศึกษา ${startYear} ถึง ${endYear} พบอินไซต์สำคัญที่สรุปได้ดังนี้ครับ:</p>
                 <ul style="padding-left: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem; line-height: 1.6;">
                     <li>
                         <strong style="color: var(--secondary);"><i class="fa-solid fa-circle-check"></i> จุดแข็งสำคัญในปัจจุบัน:</strong> 
@@ -1262,7 +1287,7 @@ window.viewSchoolDetails = function(rowId, year) {
     
     let analysisHTML = `
         <div style="display: flex; flex-direction: column; gap: 0.85rem;">
-            <p>สรุปประเมินสมรรถนะของ <strong>โรงเรียน${schoolName}</strong> ในวิชา ${currentSubject} ป.6 จากข้อมูลย้อนหลังสะสม:</p>
+            <p>สรุปประเมินสมรรถนะของ <strong>โรงเรียน${schoolName}</strong> ในวิชา ${currentSubject} ${currentGrade === "p6" ? "ป.6" : "ม.3"} จากข้อมูลย้อนหลังสะสม:</p>
             <ul style="padding-left: 1.5rem; display: flex; flex-direction: column; gap: 0.6rem; line-height: 1.6;">
                 <li>
                     <strong style="color: var(--secondary);"><i class="fa-solid fa-circle-check"></i> จุดเด่นสำคัญ (มาตรฐานที่ทำคะแนนเฉลี่ยสูงสุด):</strong> 
