@@ -987,7 +987,7 @@ function renderSchoolExplorer() {
     if (count === 0) {
         tableBody.innerHTML = `
             <tr>
-                <td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">
                     <i class="fa-solid fa-folder-open" style="font-size: 1.5rem; margin-bottom: 0.5rem; display: block;"></i>
                     ไม่พบข้อมูลโรงเรียนตามที่ระบุ
                 </td>
@@ -1036,8 +1036,6 @@ function renderSchoolExplorer() {
                 <td style="font-weight: 500;">${row["ชื่อโรงเรียน"]}</td>
                 <td>${row["อำเภอที่ตั้งรร."] || "-"}</td>
                 <td title="${row["สังกัด"]}">${shortAff}</td>
-                <td><span class="badge badge-${sizeBadge}">${size}</span></td>
-                <td><span class="badge badge-${locBadge}">${location}</span></td>
                 <td style="font-family: var(--font-mono); text-align: center;">${parseInt(row["จำนวนผู้เข้าสอบ"]).toLocaleString()}</td>
                 <td style="font-family: var(--font-mono); font-weight: 700; text-align: right; color: var(--primary);">
                     ${row.__overallAvg.toFixed(2)}
