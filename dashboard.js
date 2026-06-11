@@ -101,6 +101,11 @@ function initEventListeners() {
     // Theme Toggle Button
     document.getElementById("themeToggle").addEventListener("click", toggleTheme);
     
+    // Reset Button
+    document.getElementById("btnResetAll").addEventListener("click", () => {
+        window.location.reload();
+    });
+    
     // Drag and Drop Zone
     const dropZone = document.getElementById("dropZone");
     
