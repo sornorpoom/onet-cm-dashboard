@@ -128,11 +128,7 @@ function initEventListeners() {
     // Filters Event Listeners
     document.getElementById("subjectSelect").addEventListener("change", (e) => {
         currentSubject = e.target.value;
-        // If we have dataset, let's notify they need to upload the new file
-        if (rawDataset.length > 0) {
-            showUploadStatus(`กรุณานำเข้าไฟล์ CSV สำหรับวิชา ${currentSubject} เพื่อประมวลผลต่อ`);
-            document.getElementById("uploadOverlay").style.display = "flex";
-        }
+        loadSubjectData(currentSubject);
     });
     
     document.getElementById("filterYear").addEventListener("change", handleFilterChange);
@@ -203,9 +199,26 @@ function showUploadStatus(message) {
     statusDiv.style.display = "block";
 }
 
-// Auto Load Attempt (in case running local web server)
+const SUBJECT_FILES = {
+    "วิทยาศาสตร์": "onet ป.6 รายมาตรฐาน วิทยาศาสตร์ 65-68 - วิทยาศาสตร์.csv",
+    "คณิตศาสตร์": "onet ป.6 รายมาตรฐาน คณิตศาสตร์ 65-68 - คณิตศาสตร์ ป.6.csv",
+    "ภาษาไทย": "onet ป.6 รายมาตรฐาน ภาษาไทย 65 68 - ภาษาไทย ป.6.csv",
+    "อังกฤษ": "onet ป.6 รายมาตรฐาน อังกฤษ 65 68 - อังกฤษ ป.6.csv"
+};
+
+// Auto Load Attempt (in case running local web server or hosted on GitHub Pages)
 function tryAutoLoad() {
-    const filename = "onet ป.6 รายมาตรฐาน วิทยาศาสตร์ 65-68 - วิทยาศาสตร์.csv";
+    loadSubjectData(currentSubject || "วิทยาศาสตร์");
+}
+
+function loadSubjectData(subjectName) {
+    const filename = SUBJECT_FILES[subjectName];
+    if (!filename) return;
+    
+    // Show loading status inside the upload card
+    showUploadStatus(`กำลังโหลดข้อมูลวิชา ${subjectName} จากระบบ...`);
+    document.getElementById("uploadOverlay").style.display = "flex";
+    
     fetch(filename)
         .then(response => {
             if (!response.ok) throw new Error("CORS or File Not Found");
@@ -216,7 +229,9 @@ function tryAutoLoad() {
             handleFile(file);
         })
         .catch(err => {
-            console.log("Auto-load failed. Showing file upload card. Details:", err.message);
+            console.log(`Auto-load failed for ${subjectName}. Showing file upload card. Details:`, err.message);
+            showUploadStatus(`กรุณานำเข้าไฟล์ CSV สำหรับวิชา ${subjectName} เพื่อประมวลผลต่อ`);
+            document.getElementById("uploadOverlay").style.display = "flex";
         });
 }
 
