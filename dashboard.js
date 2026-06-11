@@ -1138,7 +1138,11 @@ window.viewSchoolDetails = function(rowId, year) {
         charts[chartKey] = new Chart(ctxTrend, {
             type: 'line',
             data: {
-                labels: activeYears.map(y => y.toString()),
+                labels: activeYears.map(y => {
+                    const yearRecord = schoolRecords.find(row => row.__year == y);
+                    const studentCount = yearRecord ? (parseInt(yearRecord["จำนวนผู้เข้าสอบ"]) || 0) : 0;
+                    return `${y} (${studentCount})`;
+                }),
                 datasets: [{
                     data: schoolStandardTrends[std],
                     borderColor: colors.palette[idx % colors.palette.length],
