@@ -1089,54 +1089,6 @@ window.viewSchoolDetails = function(rowId, year) {
     // Get all unique years in dataset
     const allYears = [...new Set(rawDataset.map(row => row.__year))].sort((a,b) => a-b);
     
-    // Calculate maximum students across history to compute progress bar widths
-    const maxStudents = Math.max(...schoolRecords.map(r => parseInt(r["จำนวนผู้เข้าสอบ"]) || 0), 1);
-    
-    const subjectGroup = SUBJECT_GROUPS[currentSubject] || "วิทยาศาสตร์และเทคโนโลยี";
-    
-    // Render Timeline metadata cards
-    let timelineHTML = '';
-    allYears.forEach(y => {
-        const yearRecord = schoolRecords.find(row => row.__year == y);
-        if (yearRecord) {
-            const studentsCount = parseInt(yearRecord["จำนวนผู้เข้าสอบ"]) || 0;
-            const studentPercent = (studentsCount / maxStudents) * 100;
-            const activeClass = yearRecord.__year == year ? 'border: 2px solid var(--primary); transform: scale(1.02);' : '';
-            
-            timelineHTML += `
-                <div class="meta-item" style="${activeClass}">
-                    <div class="meta-label">ปีการศึกษา ${y}</div>
-                    <div style="font-size: 0.72rem; color: var(--text-secondary); margin-top: 0.15rem; margin-bottom: 0.25rem;">
-                        กลุ่มสาระฯ ${subjectGroup}
-                    </div>
-                    <div class="meta-value" style="color: var(--primary); font-size: 1.15rem; font-family: var(--font-mono); font-weight: 700; margin-bottom: 0.2rem;">
-                        ${yearRecord.__overallAvg.toFixed(2)}
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.4rem; width: 100%;">
-                        <div class="student-bar-container" style="flex-grow: 1; margin: 0; height: 8px;">
-                            <div class="student-bar" style="width: ${studentPercent}%;"></div>
-                        </div>
-                        <span style="font-size: 0.75rem; color: var(--text-secondary); white-space: nowrap; font-weight: 500;">
-                            (${studentsCount.toLocaleString()} คน)
-                        </span>
-                    </div>
-                </div>
-            `;
-        } else {
-            timelineHTML += `
-                <div class="meta-item" style="opacity: 0.45; background-color: transparent;">
-                    <div class="meta-label">ปีการศึกษา ${y}</div>
-                    <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.15rem; margin-bottom: 0.25rem;">
-                        กลุ่มสาระฯ ${subjectGroup}
-                    </div>
-                    <div class="meta-value" style="font-size: 0.95rem; color: var(--text-muted); font-weight: 500; padding: 0.25rem 0;">
-                        - ไม่มีข้อมูล -
-                    </div>
-                </div>
-            `;
-        }
-    });
-    document.getElementById("modalMetaTimeline").innerHTML = timelineHTML;
 
     // Calculate standards timeline for sparkline charts
     const schoolStandardTrends = {};
@@ -1376,11 +1328,9 @@ window.downloadSchoolPDF = function(schoolName) {
     
     // Force grid layouts to print styles (avoid wrapping)
     const gridContainer = document.getElementById("schoolTrendChartsGrid");
-    const timelineContainer = document.getElementById("modalMetaTimeline");
     const analysisBox = document.getElementById("schoolAnalysisBox");
     
     if (gridContainer) gridContainer.classList.add("print-force-grid");
-    if (timelineContainer) timelineContainer.classList.add("print-force-timeline");
     if (analysisBox) analysisBox.classList.add("print-page-break");
     
     // Force Chart.js to resize
@@ -1422,7 +1372,6 @@ window.downloadSchoolPDF = function(schoolName) {
             modalBody.style.overflowY = originalOverflow;
             
             if (gridContainer) gridContainer.classList.remove("print-force-grid");
-            if (timelineContainer) timelineContainer.classList.remove("print-force-timeline");
             if (analysisBox) analysisBox.classList.remove("print-page-break");
             
             // Resize back
@@ -1445,7 +1394,6 @@ window.downloadSchoolPDF = function(schoolName) {
             modalBody.style.overflowY = originalOverflow;
             
             if (gridContainer) gridContainer.classList.remove("print-force-grid");
-            if (timelineContainer) timelineContainer.classList.remove("print-force-timeline");
             if (analysisBox) analysisBox.classList.remove("print-page-break");
             
             Object.keys(charts).forEach(key => {
